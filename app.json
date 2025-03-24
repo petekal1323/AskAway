@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "AskAway",
-    "slug": "AskAway",
+    "slug": "askaway",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -23,6 +23,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "528d3ecf-37cd-4e9b-87b2-8967c26161a0"
+      }
+    },
+    "owner": "petekal1323"
   }
 }
