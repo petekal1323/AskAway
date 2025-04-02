@@ -10,7 +10,6 @@ const RelationshipScreen = ({ navigation }) => {
             style={styles.gradient}
         >
             <SafeAreaView style={styles.container}>
-
                 <View style={styles.container}>
                     <Text style={styles.title}>Relationship Type</Text>
                     <View style={styles.buttonContainer}>
@@ -20,10 +19,9 @@ const RelationshipScreen = ({ navigation }) => {
                         >
                             <Text style={styles.buttonText}>Friends</Text>
                             <Image
-                                source={require('../assets/friends.png')}  // Adjust path if needed
+                                source={require('../assets/friends.png')}
                                 style={styles.icon}
                             />
-
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.button}
@@ -31,7 +29,7 @@ const RelationshipScreen = ({ navigation }) => {
                         >
                             <Text style={styles.buttonText}>Family</Text>
                             <Image
-                                source={require('../assets/family.png')}  // Adjust path if needed
+                                source={require('../assets/family.png')}
                                 style={styles.icon}
                             />
                         </TouchableOpacity>
@@ -41,7 +39,7 @@ const RelationshipScreen = ({ navigation }) => {
                         >
                             <Text style={styles.buttonText}>Coworkers</Text>
                             <Image
-                                source={require('../assets/coworker.png')}  // Adjust path if needed
+                                source={require('../assets/coworker.png')}
                                 style={styles.icon}
                             />
                         </TouchableOpacity>
@@ -51,12 +49,10 @@ const RelationshipScreen = ({ navigation }) => {
                         >
                             <Text style={styles.buttonText}>Lovers</Text>
                             <Image
-                                source={require('../assets/love-birds.png')}  // Adjust path if needed
+                                source={require('../assets/love-birds.png')}
                                 style={styles.icon}
                             />
                         </TouchableOpacity>
-
-
                     </View>
                 </View>
             </SafeAreaView>
