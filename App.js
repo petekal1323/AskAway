@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import WelcomeScreen from './screens/WelcomeScreen';
 import RelationshipScreen from './screens/RelationshipScreen';
 import DepthScreen from './screens/DepthScreen';
+import QuestionsScreen from './screens/QuestionsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +37,16 @@ export default function App() {
             headerTintColor: '#fff',
           }}
         />
+                <Stack.Screen
+          name="Questions"
+          component={QuestionsScreen}
+          options={{
+            headerTransparent: true,
+            headerTitleStyle: { color: '#fff' },
+            headerTintColor: '#fff',
+          }}
+        />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
