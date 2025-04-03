@@ -39,7 +39,7 @@ const questionDatabase = {
         "What's something you find adorable that I do?",
         "If we started a business together, what would it be?"
       ],
-      'Serious & Thought Provoking': [
+      'Thought-Provoking & Personal': [
         "How do you define love?",
         "What makes you feel most loved and appreciated?",
         "What fears do you have about our relationship?",
