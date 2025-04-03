@@ -37,7 +37,7 @@ export default function App() {
             headerTintColor: '#fff',
           }}
         />
-                <Stack.Screen
+        <Stack.Screen
           name="Questions"
           component={QuestionsScreen}
           options={{

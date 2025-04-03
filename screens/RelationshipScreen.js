@@ -1,4 +1,5 @@
-import react from 'react';
+// screens/RelationshipScreen.js
+import React from 'react'; // Fixed import (uppercase R)
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,50 +11,36 @@ const RelationshipScreen = ({ navigation }) => {
             style={styles.gradient}
         >
             <SafeAreaView style={styles.container}>
-                <View style={styles.container}>
-                    <Text style={styles.title}>Relationship Type</Text>
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={() => navigation.navigate('Depth', { relationship: 'Friends' })}
-                        >
-                            <Text style={styles.buttonText}>Friends</Text>
-                            <Image
-                                source={require('../assets/friends.png')}
-                                style={styles.icon}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={() => navigation.navigate('Depth', { relationship: 'Family' })}
-                        >
-                            <Text style={styles.buttonText}>Family</Text>
-                            <Image
-                                source={require('../assets/family.png')}
-                                style={styles.icon}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={() => navigation.navigate('Depth', { relationship: 'Coworkers' })}
-                        >
-                            <Text style={styles.buttonText}>Coworkers</Text>
-                            <Image
-                                source={require('../assets/coworker.png')}
-                                style={styles.icon}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={() => navigation.navigate('Depth', { relationship: 'Lovers' })}
-                        >
-                            <Text style={styles.buttonText}>Lovers</Text>
-                            <Image
-                                source={require('../assets/love-birds.png')}
-                                style={styles.icon}
-                            />
-                        </TouchableOpacity>
-                    </View>
+                <Text style={styles.title}>Relationship Type</Text>
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Depth', { relationship: 'Friends' })}>
+                        <Text style={styles.buttonText}>Friends</Text>
+                        <Image
+                            source={require('../assets/friends.png')}
+                            style={styles.icon}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Depth', { relationship: 'Family' })}>
+                        <Text style={styles.buttonText}>Family</Text>
+                        <Image
+                            source={require('../assets/family.png')}
+                            style={styles.icon}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Depth', { relationship: 'Coworkers' })}>
+                        <Text style={styles.buttonText}>Coworkers</Text>
+                        <Image
+                            source={require('../assets/coworker.png')}
+                            style={styles.icon}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Depth', { relationship: 'Lovers' })}>
+                        <Text style={styles.buttonText}>Lovers</Text>
+                        <Image
+                            source={require('../assets/love-birds.png')}
+                            style={styles.icon}
+                        />
+                    </TouchableOpacity>
                 </View>
             </SafeAreaView>
         </LinearGradient>
@@ -78,25 +65,25 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     buttonContainer: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gridTemplateRows: 'auto',
-        gap: 20,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
         width: '100%',
     },
     button: {
         backgroundColor: '#FAF9F6',
-        borderRadius: 5,
+        borderRadius: 15,
         padding: 10,
         alignItems: 'center',
         justifyContent: 'space-evenly',
-        boxShadowColor: '#000',
-        boxShadowOffset: { width: 0, height: 2 },
-        boxShadowOpacity: 0.2,
-        boxShadowRadius: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
         elevation: 3,
-        width: 150,
+        width: '45%',
         height: 150,
+        marginBottom: 20,
     },
     buttonText: {
         color: '#1f4037',
