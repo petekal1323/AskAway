@@ -1,6 +1,6 @@
 // screens/DepthScreen.js
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Platform, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,7 +10,7 @@ const DepthScreen = ({ route, navigation }) => {
     return (
         <LinearGradient colors={['#FF7E5F', '#FEB47B']} style={styles.gradient}>
             <SafeAreaView style={styles.container}>
-                <Text style={styles.title}>How Deep?</Text>
+                <Text style={styles.title}>What type of questions?</Text>
                 <Text style={styles.subtitle}>Choose a question style for {relationship}</Text>
                 <TouchableOpacity
                     style={styles.button}
@@ -28,11 +28,11 @@ const DepthScreen = ({ route, navigation }) => {
                     onPress={() =>
                         navigation.navigate('Questions', {
                             relationship,
-                            depth: 'Serious & Thought Provoking',
+                            depth: 'Thought-Provoking & Personal',
                         })
                     }
                 >
-                    <Text style={styles.buttonText}>Serious & Thought Provoking</Text>
+                    <Text style={styles.buttonText}>Thought-Provoking & Personal</Text>
                 </TouchableOpacity>
             </SafeAreaView>
         </LinearGradient>
@@ -71,17 +71,21 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         marginVertical: 10,
         alignItems: 'center',
-        boxShadowColor: '#000',
-        boxShadowOffset: { width: 0, height: 2 },
-        boxShadowOpacity: 0.2,
-        boxShadowRadius: 2,
-        elevation: 3,
-        width: '80%',
+        ...(Platform.OS === 'web'
+            ? { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)' }
+            : {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 2,
+                elevation: 3,
+            }),
     },
     buttonText: {
         color: '#FF7E5F',
         fontSize: 16,
         fontWeight: '600',
+        textAlign: 'center',
     },
 });
 

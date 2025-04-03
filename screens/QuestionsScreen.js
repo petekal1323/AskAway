@@ -1,26 +1,24 @@
-//screens/QuestionsScreen.js
-import React, { useEffect, useState } from 'react';
+// screens/QuestionsScreen.js
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, Platform, ActivityIndicator } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import questionDatabase from '../data/questionDatabase';
 
-const QuestionsScreen = ({ route, navigation})=>{
+const QuestionsScreen = ({ route, navigation }) => {
   const { relationship, depth } = route.params;
   const [questions, setQuestions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
-
-  // use the imported questionDatabase
   useEffect(() => {
-    try{
+    try {
       const relationshipQuestions = questionDatabase[relationship][depth];
       const shuffledQuestions = [...relationshipQuestions].sort(() => 0.5 - Math.random());
 
       setQuestions(shuffledQuestions);
-    } catch(error) {
+    } catch (error) {
       console.error('Error loading questions:', error);
       setQuestions([]);
     } finally {
@@ -31,15 +29,9 @@ const QuestionsScreen = ({ route, navigation})=>{
   }, [relationship, depth]);
 
   const handleSwipeLeft = (cardIndex) => {
+    // Next question
     setCurrentCardIndex(cardIndex + 1);
-    console.log('Swiped left for Next question:', questions[cardIndex + 1]);
-  }
-
-  const handleSwipeRight = () => {
-    if (currentCardIndex > 0){
-      setCurrentCardIndex(currentCardIndex - 1);
-      console.log('Swiped right for Previous question:', questions[currentCardIndex - 1]);
-    }
+    console.log("Swiped left for next question");
   };
 
   if (isLoading) {
@@ -57,12 +49,14 @@ const QuestionsScreen = ({ route, navigation})=>{
       </LinearGradient>
     );
   }
+
   return (
     <LinearGradient colors={['#8E2DE2', '#4A00E0']} style={styles.gradient}>
       <SafeAreaView style={styles.container}>
         <Text style={styles.headerText}>
           {relationship} - {depth}
         </Text>
+
         <View style={styles.swiperContainer}>
           {questions.length > 0 ? (
             <Swiper
@@ -73,15 +67,38 @@ const QuestionsScreen = ({ route, navigation})=>{
                 </View>
               )}
               onSwipedLeft={handleSwipeLeft}
-              onSwipedRight={handleSwipeRight}
               cardIndex={currentCardIndex}
-              backgroundColor={'transparent'}
-              stackSize={3}
-              stackSeparation={15}
+              backgroundColor="transparent"
+              stackSize={1}
+              disableBottomSwipe={true}
+              disableTopSwipe={true}
+              disableRightSwipe={true}
               verticalSwipe={false}
-              animateOverlayLabelsOpacity
+              cardHorizontalMargin={20}
+              cardVerticalMargin={10}
               animateCardOpacity
-              goBackToPreviousCardOnSwipeRight={true}
+              inputRotationRange={[-10, 0, 10]}
+              outputRotationRange={['-3deg', '0deg', '3deg']}
+              swipeAnimationDuration={300}
+              overlayLabels={{
+                left: {
+                  title: 'NEXT',
+                  style: {
+                    label: {
+                      backgroundColor: 'transparent',
+                      color: 'white',
+                      fontSize: 14
+                    },
+                    wrapper: {
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
+                      justifyContent: 'flex-start',
+                      marginTop: 30,
+                      marginLeft: -30
+                    }
+                  }
+                }
+              }}
             />
           ) : (
             <View style={styles.card}>
@@ -89,28 +106,32 @@ const QuestionsScreen = ({ route, navigation})=>{
             </View>
           )}
         </View>
+
         <Text style={styles.instructionText}>
-          Swipe left for next question • Swipe right for previous question
+          Swipe left for next question
         </Text>
       </SafeAreaView>
     </LinearGradient>
   );
 };
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
-const cardShadow = Platform.select({
-  web: {
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.3)',
-  },
-  default: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-});
+const getCardStyle = () => {
+  if (Platform.OS === 'web') {
+    return {
+      boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)'
+    };
+  } else {
+    return {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 5
+    };
+  }
+};
 
 const styles = StyleSheet.create({
   gradient: {
@@ -118,34 +139,58 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 20,
+    padding: 16,
+    alignItems: 'center',
+  },
+  headerText: {
+    height: 100,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'end',
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 16,
+    marginBottom: 20,
+  },
+  swiperContainer: {
+    flex: 1,
+    width: width,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerText: {
-    fontSize: 18,
-    color: '#fff',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  swiperContainer: {
-    height: 400,
-    width: width - 40,
-  },
   card: {
-    flex: 1,
-    borderRadius: 10,
+    width: width - 48,
+    height: height * 0.55,
+    borderRadius: 16,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    ...cardShadow,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)' }
+      : {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          elevation: 5
+        }
+    )
   },
+
+
+
+
+
+
   questionText: {
-    fontSize: 22,
+    fontSize: 24,
+    fontWeight: '500',
     color: '#333',
     textAlign: 'center',
-    lineHeight: 30,
+    lineHeight: 32,
   },
   loadingContainer: {
     flex: 1,
@@ -159,9 +204,13 @@ const styles = StyleSheet.create({
   },
   instructionText: {
     color: '#fff',
-    fontSize: 14,
-    marginTop: 20,
-    opacity: 0.8,
+    fontSize: 17,
+    fontStyle: 'italic',
+    marginBottom: 24,
+    textAlign: 'center',
+    padding: 10,
+    fontWeight: '500',
   }
 });
+
 export default QuestionsScreen;

@@ -1,6 +1,6 @@
 // screens/RelationshipScreen.js
 import React from 'react'; // Fixed import (uppercase R)
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Platform, Image, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -76,11 +76,16 @@ const styles = StyleSheet.create({
         padding: 10,
         alignItems: 'center',
         justifyContent: 'space-evenly',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 3,
+        ...(Platform.OS === 'web'
+            ? { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)' }
+            : {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 2,
+                elevation: 3,
+            }
+        ),
         width: '45%',
         height: 150,
         marginBottom: 20,
