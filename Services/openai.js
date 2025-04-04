@@ -45,10 +45,10 @@ export const generateQuestions = async (relationship, DepthScreen, apiKey, count
         const generatedText = response.data.choices[0].message.content;
         const questionRegex = /\d+\.\s+(.+?)(?=\d+\.|$)/gs;
         const matches = [...generatedText.matchAll(questionRegex)];
-
         const questions = matches.map(match => match[1].trim());
 
         return questions.length > 0 ? questions : [generatedText];
+
     } catch (error) {
         console.error('Error generating questions:', error);
         throw error;
