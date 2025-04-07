@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    height: height * 0.5,
+    height: "400px",//height * 0.5,
     backgroundColor: '#fff',
     borderRadius: 15,
     overflow: 'hidden',
