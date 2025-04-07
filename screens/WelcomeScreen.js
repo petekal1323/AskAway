@@ -1,27 +1,73 @@
-// screens/WelcomeScreen.js
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+const { width } = Dimensions.get('window');
 
 const WelcomeScreen = ({ navigation }) => {
-  return (
-    <LinearGradient
-      colors={['#0f2027', '#203a43', '#2c5364']}
-      style={styles.gradient}
-    >
-      <View style={styles.container}>
-        <Text style={styles.title}>Welcome to Ask-Away!</Text>
-        <Text style={styles.subtitle}>
-          AskAway helps you spark a conversation by generating engaging ice breaker questions.
-        </Text>
+  const [isLoading, setIsLoading] = useState(true);
+  const progressAnimation = new Animated.Value(0);
+  const progressWidth = progressAnimation.interpolate({
+    inputRange: [0, 100],
+    outputRange: ['0%', '100%'],
+  });
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('Relationship')}
-        >
-          <Text style={styles.buttonText}>GET STARTED</Text>
-        </TouchableOpacity>
-      </View>
+  useEffect(() => {
+    const simulateLoading = () => {
+      Animated.timing(progressAnimation, {
+        toValue: 100,
+        duration: 3000,
+        useNativeDriver: false,
+      }).start(() => {
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 300);
+      });
+    };
+
+    simulateLoading();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <LinearGradient colors={['#4568DC', '#B06AB3']} style={styles.gradient}>
+        <SafeAreaView style={styles.container}>
+          <Text style={styles.loadingTitle}>AskAway</Text>
+          <Text style={styles.loadingSubtitle}>Starting up...</Text>
+
+          <View style={styles.progressContainer}>
+            <Animated.View
+              style={[
+                styles.progressBar,
+                {
+                  width: progressWidth,
+                }
+              ]}
+            />
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
+    );
+  }
+
+  return (
+    <LinearGradient colors={['#4568DC', '#B06AB3']} style={styles.gradient}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.contentContainer}>
+          <Text style={styles.title}>AskAway</Text>
+          <Text style={styles.subtitle}>
+            Build stronger bonds through meaningful conversations
+          </Text>
+
+          <TouchableOpacity
+            style={styles.startButton}
+            onPress={() => navigation.navigate('Relationship')}
+          >
+            <Text style={styles.startButtonText}>Start Connecting</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     </LinearGradient>
   );
 };
@@ -32,40 +78,69 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    padding: 20,
+  },
+  contentContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 28,
-    color: '#fff',
+    fontSize: 42,
     fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#fff',
-    marginBottom: 40,
     textAlign: 'center',
-    lineHeight: 22,
+    marginBottom: 40,
+    opacity: 0.9,
+    lineHeight: 24,
   },
-  button: {
-    outlineStyle: 'hidden',
-    backgroundColor: '#fff',
+  startButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     paddingVertical: 15,
     paddingHorizontal: 30,
-    borderRadius: 25,
-    boxShadowColor: "#000",
-    boxShadowOffset: { width: 3, height: 10 },
-    boxShadowOpacity: 0.2,
-    boxShadowRadius: 10,
-    elevation: 3,
+    borderRadius: 30,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
-  buttonText: {
-    color: '#2c5364',
-    fontSize: 16,
+  startButtonText: {
+    color: '#fff',
+    fontSize: 18,
     fontWeight: '600',
+  },
+  // Loading screen styles
+  loadingTitle: {
+    fontSize: 42,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 10,
+    textAlign: 'center',
+    marginTop: 100,
+  },
+  loadingSubtitle: {
+    fontSize: 18,
+    color: '#fff',
+    textAlign: 'center',
+    opacity: 0.9,
+  },
+  progressContainer: {
+    height: 6,
+    width: width - 60,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 10,
+    marginTop: 40,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
   },
 });
 

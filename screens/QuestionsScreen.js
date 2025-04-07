@@ -1,320 +1,244 @@
-// screens/QuestionsScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
-import Swiper from 'react-native-deck-swiper';
+import { View, Text, StyleSheet, Dimensions, Platform, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { generateQuestions } from '../Services/openai';
-import questionDatabase from '../data/questionDatabase';
+import { generateQuestionsWithAI } from '../Services/questionService';
+
 const QuestionsScreen = ({ route, navigation }) => {
   const { relationship, depth } = route.params;
-  const [questions, setQuestions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [useAI, setUseAI] = useState(false);
-  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [questions, setQuestions] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadSettings();
-  }, [relationship, depth]);
-  const loadSettings = async () => {
-    try {
-      const savedUseAI = await AsyncStorage.getItem('use_ai');
-      const useAIValue = savedUseAI === 'true';
-      setUseAI(useAIValue);
+    fetchQuestions();
+  }, []);
 
-      if (useAIValue) {
-        loadAIQuestions();
-      } else {
-        loadStaticQuestions();
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error);
-      loadStaticQuestions();
-    }
-  };
-
-  const shuffleArray = (array) => {
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-    }
-    return newArray;
-  };
-
-  const loadStaticQuestions = () => {
-    try {
-      const relationshipQuestions = questionDatabase[relationship][depth];
-      let seenQuestions = [];
-      try {
-        const seenQuestionsJson = AsyncStorage.getItem('seen_questions');
-        if (seenQuestionsJson) {
-          seenQuestions = JSON.parse(seenQuestionsJson);
-        }
-      } catch (error) {
-        console.error('Error loading seen questions:', error);
-      }
-
-      const unseenQuestions = relationshipQuestions.filter(q => !seenQuestions.includes(q));
-
-      const questionsToUse = unseenQuestions.length > 0 ? unseenQuestions : relationshipQuestions;
-      const shuffledQuestions = shuffleArray(questionsToUse);
-      const selectedQuestions = shuffledQuestions.slice(0, 10);
-      const updatedSeenQuestions = [...seenQuestions, ...selectedQuestions].slice(0, 100);
-
-      await AsyncStorage.setItem('seen_questions', JSON.stringify(updatedSeenQuestions));
-
-      setQuestions(selectedQuestions);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error loading static questions:', error);
-      setQuestions([]);
-      setIsLoading(false);
-    }
-  };
-
-  // generate questions using OpenAI - always creates fresh questions
-  const loadAIQuestions = async () => {
-    setIsGeneratingAI(true);
-    try {
-      const apiKey = await AsyncStorage.getItem('openai_api_key');
-      if (!apiKey) {
-        throw new Error('API key is required');
-      }
-      const aiQuestions = await generateQuestions(relationship, depth, apiKey);
-      setQuestions(aiQuestions);
-    } catch (error) {
-      console.error('Error generating AI questions:', error);
-      Alert.alert(
-        'Error Generating Questions',
-        'Failed to generate AI questions. Falling back to static questions.',
-        [{ text: 'OK' }]
-      );
-      loadStaticQuestions();
-    } finally {
-      setIsGeneratingAI(false);
-      setIsLoading(false);
-    }
-  };
-
-
-  const handleSwipeLeft = (cardIndex) => {
-    // Next question
-    setCurrentCardIndex(cardIndex + 1);
-    console.log("Swiped left for next question");
-  };
-
-  const openSettings = () => {
-    navigation.navigate('Settings');
-  };
-
-  const handleRegenerateQuestions = () => {
+  const fetchQuestions = async () => {
     setIsLoading(true);
-    setCurrentCardIndex(0);
-    if (useAI) {
-      loadAIQuestions();
-    } else {
-      loadStaticQuestions();
+    setError(null);
+
+    try {
+      // Generate questions with OpenAI
+      const aiQuestions = await generateQuestionsWithAI(relationship, depth, 5);
+      setQuestions(aiQuestions);
+      setCurrentIndex(0);
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      setError("Failed to generate questions. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-   if (isLoading) {
+  const goToNextQuestion = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const goToPrevQuestion = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  // Loading screen
+  if (isLoading) {
     return (
       <LinearGradient colors={['#8E2DE2', '#4A00E0']} style={styles.gradient}>
-        <SafeAreaView style={styles.container}>
-          <Text style={styles.headerText}>
-            {relationship} - {depth}
-          </Text>
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#ffffff" />
-            <Text style={styles.loadingText}>
-              {isGeneratingAI
-                ? 'Generating AI questions...'
-                : 'Loading questions...'}
-            </Text>
-          </View>
-        </SafeAreaView>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#ffffff" />
+          <Text style={styles.loadingText}>Generating personalized questions...</Text>
+        </View>
       </LinearGradient>
     );
   }
+
   return (
     <LinearGradient colors={['#8E2DE2', '#4A00E0']} style={styles.gradient}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Ionicons name="arrow-back" size={24} color="#ffffff" />
           </TouchableOpacity>
           <Text style={styles.headerText}>
             {relationship} - {depth}
           </Text>
-          <TouchableOpacity
-            style={styles.settingsButton}
-            onPress={openSettings}
-          >
-            <Ionicons name="settings-outline" size={24} color="#fff" />
-          </TouchableOpacity>
         </View>
 
-        <View style={styles.swiperContainer}>
-          {questions.length > 0 ? (
-            <Swiper
-              cards={questions}
-              renderCard={(card) => (
-                <View style={styles.card}>
-                  <Text style={styles.questionText}>{card}</Text>
-                  {useAI && (
-                    <View style={styles.aiIndicator}>
-                      <Text style={styles.aiIndicatorText}>AI Generated</Text>
-                    </View>
-                  )}
-                </View>
-              )}
-              onSwipedLeft={handleSwipeLeft}
-              cardIndex={currentCardIndex}
-              backgroundColor="transparent"
-              stackSize={1}
-              disableBottomSwipe={true}
-              disableTopSwipe={true}
-              disableRightSwipe={true}
-              verticalSwipe={false}
-              cardHorizontalMargin={20}
-              cardVerticalMargin={10}
-              animateCardOpacity
-              inputRotationRange={[-10, 0, 10]}
-              outputRotationRange={['-3deg', '0deg', '3deg']}
-              swipeAnimationDuration={300}
-              useViewOverflow={Platform.OS === 'web' ? false : true}
-              animationOptions={{
-                isInteraction: false,
-              }}
-              overlayLabels={{
-                left: {
-                  title: 'NEXT',
-                  style: {
-                    label: {
-                      backgroundColor: 'transparent',
-                      color: 'white',
-                      fontSize: 14
-                    },
-                    wrapper: {
-                      flexDirection: 'column',
-                      alignItems: 'flex-end',
-                      justifyContent: 'flex-start',
-                      marginTop: 30,
-                      marginLeft: -30
-                    }
-                  }
-                }
-              }}
-            />
-          ) : (
+        {error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={fetchQuestions}
+            >
+              <Text style={styles.retryButtonText}>Try Again</Text>
+            </TouchableOpacity>
+          </View>
+        ) : questions.length > 0 ? (
+          <View style={styles.carouselContainer}>
             <View style={styles.card}>
-              <Text style={styles.questionText}>No questions available</Text>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardCount}>
+                  Question {currentIndex + 1} of {questions.length}
+                </Text>
+              </View>
+              <View style={styles.cardContent}>
+                <Text style={styles.questionText}>{questions[currentIndex]}</Text>
+              </View>
+              <View style={styles.cardFooter}>
+                <Text style={styles.hintText}>Use buttons below to navigate questions</Text>
+              </View>
             </View>
-          )}
-        </View>
 
-        <View style={styles.bottomContainer}>
-          <Text style={styles.instructionText}>
-            Swipe left for next question
-          </Text>
+            <View style={styles.navigationContainer}>
+              <TouchableOpacity
+                style={[styles.navButton, currentIndex === 0 && styles.disabledButton]}
+                onPress={goToPrevQuestion}
+                disabled={currentIndex === 0}
+              >
+                <Ionicons name="chevron-back" size={30} color={currentIndex === 0 ? "#aaa" : "#fff"} />
+              </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.regenerateButton}
-            onPress={handleRegenerateQuestions}
-          >
-            <Ionicons name="refresh-outline" size={18} color="#fff" />
-            <Text style={styles.regenerateText}>New Questions</Text>
-          </TouchableOpacity>
-        </View>
+              <TouchableOpacity
+                style={[styles.navButton, currentIndex === questions.length - 1 && styles.disabledButton]}
+                onPress={goToNextQuestion}
+                disabled={currentIndex === questions.length - 1}
+              >
+                <Ionicons name="chevron-forward" size={30} color={currentIndex === questions.length - 1 ? "#aaa" : "#fff"} />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={styles.generateMoreButton}
+              onPress={fetchQuestions}
+            >
+              <Text style={styles.generateMoreButtonText}>Generate New Questions</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.noQuestionsContainer}>
+            <Text style={styles.noQuestionsText}>No questions available</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={fetchQuestions}
+            >
+              <Text style={styles.retryButtonText}>Generate Questions</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </SafeAreaView>
     </LinearGradient>
   );
 };
+
 const { width, height } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
-  container: {
+  safeArea: {
     flex: 1,
-    padding: 16,
-    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 8,
-    marginBottom: 16,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
   },
   backButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
     color: '#fff',
     textAlign: 'center',
-    flex: 1,
+    fontWeight: '600',
+    width: '100%',
   },
-  settingsButton: {
-    padding: 8,
-  },
-  swiperContainer: {
+  carouselContainer: {
     flex: 1,
-    width: width,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
   },
   card: {
-    width: width - 48,
-    height: height * 0.55,
-    borderRadius: 16,
+    width: '100%',
+    height: height * 0.5,
     backgroundColor: '#fff',
+    borderRadius: 15,
+    overflow: 'hidden',
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.3)' }
+      : {
+          boxShadowColor: "#000",
+          boxShadowOffset: { width: 0, height: 4 },
+          boxShadowOpacity: 0.3,
+          boxShadowRadius: 6,
+          elevation: 8,
+        }
+    ),
+  },
+  cardHeader: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    alignItems: 'center',
+  },
+  cardCount: {
+    fontSize: 14,
+    color: '#888',
+  },
+  cardContent: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    ...Platform.select({
-      web: {
-        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)'
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 5
-      }
-    }),
   },
   questionText: {
-    fontSize: 24,
-    fontWeight: '500',
+    fontSize: 22,
     color: '#333',
     textAlign: 'center',
     lineHeight: 32,
   },
-  aiIndicator: {
-    position: 'absolute',
-    bottom: 10,
-    right: 10,
-    backgroundColor: 'rgba(142, 45, 226, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
+  cardFooter: {
+    padding: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    alignItems: 'center',
   },
-  aiIndicatorText: {
+  hintText: {
     fontSize: 12,
-    color: '#8E2DE2',
-    fontWeight: '500',
+    color: '#888',
+  },
+  navigationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
+    marginTop: 30,
+  },
+  navButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  disabledButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   loadingContainer: {
     flex: 1,
@@ -323,34 +247,54 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: '#fff',
-    marginTop: 15,
     fontSize: 16,
+    marginTop: 10,
   },
-  bottomContainer: {
-    width: '100%',
+  noQuestionsContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
   },
-  instructionText: {
+  noQuestionsText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    color: '#fff',
+    fontSize: 18,
     textAlign: 'center',
-    marginVertical: 8,
+    marginBottom: 20,
   },
-  regenerateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  retryButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    marginTop: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
   },
-  regenerateText: {
+  retryButtonText: {
     color: '#fff',
-    marginLeft: 8,
-    fontSize: 14,
-    fontWeight: '500',
-  }
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  generateMoreButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    marginTop: 20,
+  },
+  generateMoreButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
+
 export default QuestionsScreen;
