@@ -22,7 +22,7 @@ const QuestionsScreen = ({ route, navigation }) => {
 
     try {
       // Generate questions with OpenAI
-      const aiQuestions = await generateQuestionsWithAI(relationship, depth, 5);
+      const aiQuestions = await generateQuestionsWithAI(relationship, depth, 10);
       setQuestions(aiQuestions);
       setCurrentIndex(0);
     } catch (error) {
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerText: {
-    fontSize: 18,
+    fontSize: 14,
     color: '#fff',
     textAlign: 'center',
     fontWeight: '600',

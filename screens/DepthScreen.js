@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerText: {
-        fontSize: 18,
+        fontSize: 14,
         color: '#fff',
         textAlign: 'center',
         fontWeight: '600',
