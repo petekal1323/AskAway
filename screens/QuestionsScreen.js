@@ -6,6 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { generateQuestionsWithAI } from '../Services/questionService';
 
 const QuestionsScreen = ({ route, navigation }) => {
+  if (!route?.params?.relationship || !route?.params?.depth) {
+    navigation.goBack();
+    return null;
+  }
+
   const { relationship, depth } = route.params;
   const [isLoading, setIsLoading] = useState(true);
   const [questions, setQuestions] = useState([]);
@@ -14,7 +19,7 @@ const QuestionsScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     fetchQuestions();
-  }, []);
+  }, [relationship, depth]);
 
   const fetchQuestions = async () => {
     setIsLoading(true);
@@ -34,12 +39,14 @@ const QuestionsScreen = ({ route, navigation }) => {
   };
 
   const goToNextQuestion = () => {
+    if (questions.length === 0) return;
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
   };
 
   const goToPrevQuestion = () => {
+    if (questions.length === 0) return;
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
@@ -176,7 +183,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    height: "400px",//height * 0.5,
+    height: height * 0.5,
     backgroundColor: '#fff',
     borderRadius: 15,
     overflow: 'hidden',
